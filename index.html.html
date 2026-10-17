@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stok Opname - Caffe TokoKopiTuju</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7cc5fb',
+                            400: '#38a5f8',
+                            500: '#0e86eb',
+                            600: '#026dc7',
+                            700: '#0355a1',
+                            800: '#074885',
+                            900: '#0b3d6f',
+                            950: '#072647',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Poppins & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="h-full text-slate-800 flex flex-col bg-slate-50">
+
+    <!-- Header / Navbar dengan Pemilihan 5 Cabang Outlet -->
+    <header class="bg-brand-900 text-white shadow-md sticky top-0 z-30 border-b border-brand-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <div class="bg-white p-2.5 rounded-2xl text-brand-900 shadow-md border border-brand-200 flex items-center justify-center font-bold text-xl tracking-tighter">
+                    <span class="text-brand-900 font-extrabold text-2xl px-1">7.</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-base sm:text-xl tracking-wide text-white">TokoKopiTuju</h1>
+                    </div>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                        <span class="text-xs text-brand-300">Outlet:</span>
+                        <select id="selectCabang" onchange="gantiCabang()" class="bg-brand-800 text-white text-xs font-semibold px-2.5 py-1 rounded-xl border border-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer">
+                            <option value="bajigau">Cabang Baji Gau</option>
+                            <option value="tamalate">Cabang Tamalate</option>
+                            <option value="perintis">Cabang Perintis</option>
+                            <option value="agussalim">Cabang Agus Salim Gowa</option>
+                            <option value="abdesir">Cabang Abdesir</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="exportData()" title="Backup Data Cabang Ini" class="px-3 py-2 bg-brand-800 hover:bg-brand-700 rounded-xl text-brand-100 hover:text-white transition flex items-center gap-1.5 text-xs font-medium border border-brand-700 shadow-sm">
+                    <i data-lucide="download" class="w-4 h-4 text-brand-300"></i> <span class="hidden sm:inline">Backup</span>
+                </button>
+                <label title="Restore Data Cabang Ini" class="px-3 py-2 bg-brand-800 hover:bg-brand-700 rounded-xl text-brand-100 hover:text-white transition flex items-center gap-1.5 text-xs font-medium border border-brand-700 cursor-pointer shadow-sm">
+                    <i data-lucide="upload" class="w-4 h-4 text-brand-300"></i> <span class="hidden sm:inline">Restore</span>
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="bg-brand-800 text-brand-100 shadow-inner">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 sm:space-x-3 overflow-x-auto py-1.5">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition whitespace-nowrap">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+            </button>
+            <button onclick="switchTab('stok')" id="nav-stok" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition whitespace-nowrap">
+                <i data-lucide="package" class="w-4 h-4"></i> Data Bahan Baku
+            </button>
+            <button onclick="switchTab('opname')" id="nav-opname" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition whitespace-nowrap">
+                <i data-lucide="clipboard-check" class="w-4 h-4"></i> Mulai Opname Harian
+            </button>
+            <button onclick="switchTab('riwayat')" id="nav-riwayat" class="tab-btn px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition whitespace-nowrap">
+                <i data-lucide="history" class="w-4 h-4"></i> Riwayat & Laporan
+            </button>
+        </div>
+    </nav>
+
+    <!-- Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            <div class="relative overflow-hidden bg-gradient-to-r from-brand-900 via-brand-800 to-brand-950 rounded-3xl p-8 text-white shadow-xl border border-brand-700">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+                    <i data-lucide="coffee" class="w-64 h-64"></i>
+                </div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="space-y-2">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-brand-200 text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                            Outlet Aktif: <span id="labelNamaOutlet" class="text-white font-bold uppercase">Cabang Baji Gau</span>
+                        </div>
+                        <h2 class="text-3xl font-bold tracking-tight text-white">Form Barista Harian ☕</h2>
+                        <p class="text-brand-200 text-sm max-w-xl">Pantau inventaris bahan gudang dan penunjang barista berdasarkan laporan fisik harian.</p>
+                    </div>
+                    <button onclick="switchTab('opname')" class="bg-white text-brand-900 hover:bg-brand-50 font-semibold px-6 py-3 rounded-2xl shadow-lg transition flex items-center gap-2 text-sm border border-brand-100">
+                        <i data-lucide="clipboard-check" class="w-5 h-5 text-brand-700"></i> Mulai Opname Hari Ini
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistik Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Jenis Item</p>
+                        <h3 id="statTotalBahan" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1">Item aktif di sistem</p>
+                    </div>
+                    <div class="p-4 bg-brand-50 text-brand-600 rounded-2xl">
+                        <i data-lucide="boxes" class="w-7 h-7"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Stok Menipis</p>
+                        <h3 id="statBahanMenipis" class="text-3xl font-bold text-amber-600 mt-1">0</h3>
+                        <p class="text-[11px] text-amber-600/80 mt-1">Segera lakukan restock</p>
+                    </div>
+                    <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl">
+                        <i data-lucide="alert-triangle" class="w-7 h-7"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Status Opname Hari Ini</p>
+                        <h3 id="statStatusHariIni" class="text-base font-bold text-slate-900 mt-2">Belum Dilakukan</h3>
+                        <p id="statStatusSub" class="text-[11px] text-slate-400 mt-1">Pengecekan fisik barista</p>
+                    </div>
+                    <div id="statStatusIcon" class="p-4 bg-rose-50 text-rose-600 rounded-2xl">
+                        <i data-lucide="clock" class="w-7 h-7"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Riwayat Opname</p>
+                        <h3 id="statTotalRiwayat" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1">Arsip laporan tersimpan</p>
+                    </div>
+                    <div class="p-4 bg-brand-50 text-brand-600 rounded-2xl">
+                        <i data-lucide="file-spreadsheet" class="w-7 h-7"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Peringatan Stok Menipis -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i> Perhatian: Stok Item Menipis
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Daftar item yang berada di bawah batas minimum.</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
+                                <th class="p-4 rounded-l-xl font-semibold">Nama Item</th>
+                                <th class="p-4 font-semibold">Kategori</th>
+                                <th class="p-4 font-semibold">Stok Sistem</th>
+                                <th class="p-4 font-semibold">Batas Minimum</th>
+                                <th class="p-4 rounded-r-xl font-semibold">Satuan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelMenipisBody" class="text-sm divide-y divide-slate-100">
+                            <!-- Diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DATA BAHAN BAKU -->
+        <section id="tab-stok" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <input type="text" id="searchBahan" oninput="renderBahan()" placeholder="Cari nama item..." class="px-4 py-2.5 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-full sm:w-64 bg-slate-50">
+                    <select id="filterKategori" onchange="renderBahan()" class="px-4 py-2.5 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50">
+                        <option value="">Semua Kategori</option>
+                        <option value="Stok Gudang">Stok Gudang</option>
+                        <option value="Stok Penunjang">Stok Penunjang</option>
+                    </select>
+                </div>
+                <button onclick="openModalBahan()" class="bg-brand-900 hover:bg-brand-950 text-white font-medium px-5 py-2.5 rounded-2xl text-sm shadow transition flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Tambah Item Baru
+                </button>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase">
+                                <th class="p-4 font-semibold">Nama Item</th>
+                                <th class="p-4 font-semibold">Kategori</th>
+                                <th class="p-4 font-semibold">Stok Saat Ini</th>
+                                <th class="p-4 font-semibold">Batas Min.</th>
+                                <th class="p-4 font-semibold">Satuan</th>
+                                <th class="p-4 font-semibold text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelBahanBody" class="text-sm divide-y divide-slate-100">
+                            <!-- Diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: MULAI OPNAME -->
+        <section id="tab-opname" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Form Stok Opname Harian</h2>
+                    <p class="text-xs text-slate-500 mt-1">Masukkan hasil perhitungan fisik stok barista.</p>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Opname</label>
+                        <input type="date" id="opnameTanggal" class="px-3.5 py-2.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                    </div>
+                    <button onclick="simpanOpname()" class="mt-5 bg-brand-900 hover:bg-brand-950 text-white font-medium px-5 py-2.5 rounded-2xl text-sm shadow transition flex items-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i> Simpan Opname
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase">
+                                <th class="p-4 font-semibold">Nama Item</th>
+                                <th class="p-4 font-semibold">Kategori</th>
+                                <th class="p-4 font-semibold">Stok Sistem</th>
+                                <th class="p-4 font-semibold">Stok Fisik (Riil)</th>
+                                <th class="p-4 font-semibold">Selisih</th>
+                                <th class="p-4 font-semibold">Catatan / Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelOpnameBody" class="text-sm divide-y divide-slate-100">
+                            <!-- Diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: RIWAYAT & LAPORAN -->
+        <section id="tab-riwayat" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-900 mb-1">Riwayat Laporan Stok Opname</h2>
+                <p class="text-xs text-slate-500 mb-6">Arsip laporan pengecekan harian untuk outlet yang dipilih.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase">
+                                <th class="p-4 font-semibold rounded-l-xl">Tanggal Opname</th>
+                                <th class="p-4 font-semibold">Total Jenis Item Dicek</th>
+                                <th class="p-4 font-semibold">Jumlah Ada Selisih</th>
+                                <th class="p-4 font-semibold text-center rounded-r-xl">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelRiwayatBody" class="text-sm divide-y divide-slate-100">
+                            <!-- Diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Cafe -->
+    <footer class="bg-brand-950 text-brand-200 text-xs py-6 mt-12 border-t border-brand-900">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-1">
+            <p class="font-semibold text-white">TokoKopiTuju — Form Barista Harian</p>
+            <p class="text-brand-300">Sistem Manajemen Inventaris & Stok Opname Bahan Baku.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL TAMBAH / EDIT ITEM -->
+    <div id="modalBahan" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-5">
+                <h3 id="modalBahanTitle" class="font-bold text-lg text-slate-900">Tambah Item Baru</h3>
+                <button onclick="closeModalBahan()" class="text-slate-400 hover:text-slate-700 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="formBahan" onsubmit="saveBahan(event)" class="space-y-4">
+                <input type="hidden" id="bahanIndex">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Item</label>
+                    <input type="text" id="inputNama" required class="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: Beans blend">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kategori</label>
+                    <select id="inputKategori" required class="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="Stok Gudang">Stok Gudang</option>
+                        <option value="Stok Penunjang">Stok Penunjang</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Stok Awal / Sistem</label>
+                        <input type="number" step="any" id="inputStok" required class="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Batas Minimum</label>
+                        <input type="number" step="any" id="inputMin" required class="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="0">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Satuan</label>
+                    <input type="text" id="inputSatuan" required class="w-full px-4 py-2.5 border border-slate-200 rounded-2xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Contoh: 1 Kg, pcs, Dos">
+                </div>
+                <div class="flex justify-end gap-3 pt-3">
+                    <button type="button" onclick="closeModalBahan()" class="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-2xl text-sm font-medium hover:bg-slate-50 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-900 hover:bg-brand-950 text-white rounded-2xl text-sm font-medium shadow">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL RIWAYAT OPNAME -->
+    <div id="modalDetail" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
